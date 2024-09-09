@@ -1,17 +1,18 @@
 # Libraries ----
 library(tidyverse)
+library(anadrofish)
 
 # Result files ----
 # . Read in data if not pre-compiled ----
-files_num <- grep('bbh_habitat_result', dir("notcommit/2023-river-herring"))
+files_num <- grep('bbh_habitat_baseline', dir("results"))
 
-files <- dir("notcommit/2023-river-herring")[files_num]
+files <- dir("results")[files_num]
 
 results <- vector(mode='list', length=length(files))
 
 for(i in 1:length(files)){
   # Load file
-  load(paste0("notcommit/2023-river-herring/", files[i]))
+  load(paste0("results/", files[i]))
   
   # Extract results list from output list
   out <- lapply(result, function(x) x[[c('res')]])
@@ -24,6 +25,9 @@ for(i in 1:length(files)){
 }
 # names(res) <- NULL
 pdata <- do.call(rbind, results)
+
+# Create column for all spawners
+pdata$spawners = rowSums(pdata[, grep(pattern = "spawners_", x = names(pdata))])
 
 # Coast-wide plots (Figure 6) ----
 # Summary data for plotting
@@ -50,11 +54,11 @@ plotter$scenario <- factor(plotter$scenario,
 plotter
 
 write.table(plotter, 
-            "notcommit/2023-river-herring/bbh_coastal_pop_ests.csv", 
+            "results/bbh_coastal_pop_ests.csv", 
             sep = ",", quote = FALSE, row.names = FALSE)
 
 # Plot
-jpeg("notcommit/2023-river-herring/Figure6.jpg",
+jpeg("results/Figure6.jpg",
      res = 300, 
      height = 2400,
      width = 3200)
@@ -109,11 +113,11 @@ plotter$region <- factor(plotter$region,
                          labels = c("SAT", "MAT", "SNE", "MNE", "CAN-NNE"))
 
 write.table(plotter, 
-            "notcommit/2023-river-herring/bbh_regional_pop_ests.csv", 
+            "results/bbh_regional_pop_ests.csv", 
             sep = ",", quote = FALSE, row.names = FALSE)
 
 
-jpeg("notcommit/2023-river-herring/Figure7.jpg",
+jpeg("results/Figure7.jpg",
      res = 300, 
      height = 2400,
      width = 3600)
@@ -159,7 +163,7 @@ Table3$difference <- Table3$Habitat - Table3$first_dam
 Table3$percent_difference <- round(
   (1 - Table3$first_dam/Table3$Habitat)*100)
 
-write.table(Table3, "notcommit/2023-river-herring/Table3.csv",
+write.table(Table3, "results/Table3.csv",
             row.names = FALSE, quote = FALSE, sep = ",")
 
 # River-specific Habitat calculations (Table 4) ----
@@ -177,5 +181,5 @@ Table4$difference <- Table4$Habitat - Table4$first_dam
 Table4$percent_difference <- round(
   (1 - Table4$first_dam/Table4$Habitat)*100)
 
-write.table(Table4, "notcommit/2023-river-herring/Table4.csv",
+write.table(Table4, "results/Table4.csv",
             row.names = FALSE, quote = FALSE, sep = ",")

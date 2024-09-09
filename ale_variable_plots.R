@@ -24,6 +24,7 @@ for(i in 1:length(files)){
   # Add to res list
   results[[i]] <- resdf
 }
+
 # names(res) <- NULL
 pdata <- do.call(rbind, results)
 
