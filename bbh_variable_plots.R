@@ -33,10 +33,18 @@ pdata$spawners = rowSums(pdata[, grep(pattern = "spawners_", x = names(pdata))])
 
 # Coastwide Plot ----
 # Summary data for plotting
+# plotter <- pdata %>%
+#   group_by(upstream, downstream, downstream_j, river) %>%
+#   summarize(
+#     pop = mean(spawners),
+#     lci = quantile(spawners, 0.025),
+#     uci = quantile(spawners, 0.975),
+#     samp = n())
+
 plotter <- pdata %>%
   group_by(upstream, downstream, downstream_j, river) %>%
   summarize(
-    pop = mean(spawners),
+    pop = median(spawners),
     lci = quantile(spawners, 0.025),
     uci = quantile(spawners, 0.975),
     samp = n())
@@ -54,14 +62,18 @@ plotter <- plotter %>%
     downstream = as.character(downstream),
     downstream_j = paste0("DS Juv = ", downstream_j))
 
+write.table(plotter, "results/bbh_variable_coastal.csv", sep = ",",
+            quote = FALSE, row.names = FALSE)
+
+
 baseline <- mean(plotter$pop[plotter$upstream == 0])
 
 # Plotting code
 bbh_coastal_variable <- ggplot(plotter, aes(x = upstream, y = pop, color = downstream, fill = downstream)) +
-  geom_line() +
-  geom_ribbon(
-    aes(x = upstream, ymin = lwr, ymax = upr, color = NULL),
-    alpha = 0.1) +
+  # geom_line() +
+  # geom_ribbon(
+  #   aes(x = upstream, ymin = lwr, ymax = upr, color = NULL),
+  #   alpha = 0.1) +
   guides(color = guide_legend(nrow = 1, byrow = TRUE)) +
   facet_wrap(~downstream_j, nrow = 1) +
   xlab("Upstream passage") +
@@ -86,7 +98,7 @@ bbh_coastal_variable <- ggplot(plotter, aes(x = upstream, y = pop, color = downs
     strip.text.x = element_text(size = 8, color = "black"),
     legend.text = element_text(size = 10)
   ) +
-  # geom_smooth(method = NULL) + # Will remove when there are more data
+  geom_smooth(method = NULL) + # Will remove when there are more data
   geom_line(aes(y = baseline), color = "gray40", lty = 2, lwd = .25)
   
 bbh_coastal_variable
@@ -124,6 +136,10 @@ plotter <- plotter %>%
     downstream = as.character(downstream),
     downstream_j = paste0("DS Juv = ", downstream_j))
 
+write.table(plotter, "results/bbh_variable_regional.csv", sep = ",",
+            quote = FALSE, row.names = FALSE)
+
+
 baselines <- plotter %>% 
   filter(upstream == 0) %>% 
   group_by(region) %>% 
@@ -133,10 +149,10 @@ baselines <- plotter %>%
 # Plotting code
 bbh_variable_regional <- ggplot(
   plotter, aes(x = upstream, y = pop, color = downstream, fill = downstream)) +
-  geom_line() +
-  geom_ribbon(
-    aes(x = upstream, ymin = lwr, ymax = upr, color = NULL),
-    alpha = 0.1) +
+  # geom_line() +
+  # geom_ribbon(
+  #   aes(x = upstream, ymin = lwr, ymax = upr, color = NULL),
+  #   alpha = 0.1) +
   guides(color = guide_legend(nrow = 1, byrow = TRUE)) +
   facet_grid(region~downstream_j, scales = "free_y") +
   xlab("Upstream passage") +
@@ -180,7 +196,7 @@ bbh_variable_regional <- ggplot(
     strip.text.x = element_text(size = 8, color = "black"),
     legend.text = element_text(size = 10)
   ) +
-  # geom_smooth(method = NULL) + # Will remove when there are more results
+  geom_smooth(method = NULL) + # Will remove when there are more results
   geom_hline(data = baselines, aes(yintercept = pop), color = "gray40",
              lty = 2, lwd = .25)
 
